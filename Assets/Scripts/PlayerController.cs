@@ -2,36 +2,75 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+public struct Move
+{
+    public int X;
+    public int Y;
+
+    public Move(int x, int y)
+    {
+        X = x;
+        Y = y;
+    }
+}
+
 public class PlayerController : MonoBehaviour
 {
-    // Start is called before the first frame update
+
+    public enum Direction
+    {
+        Down,
+        Left,
+        Up,
+        Right
+    }
+
+
+    private Direction direction = Direction.Up;
+    public Move move = new Move(0, 0);
+    private Animator animator;
+
     void Start()
     {
-        
+        animator = GetComponent<Animator>();
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            transform.Translate(Vector3.up);
+            direction = Direction.Up;
+            WalkSwitch();
+            move = new Move(0, 1);
         }
 
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            transform.Translate(Vector3.left);
+            direction = Direction.Left;
+            WalkSwitch();
+            move = new Move(-1, 0);
         }
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            transform.Translate(Vector3.right);
+            direction = Direction.Right;
+            WalkSwitch();
+            move = new Move(1, 0);
         }
 
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            transform.Translate(Vector3.down);
+            direction = Direction.Down;
+            WalkSwitch();
+            move = new Move(0, -1);
         }
+
     }
 
+    private void WalkSwitch()
+    {
+        animator.SetInteger("direction", (int) direction);
+    }
 
 }

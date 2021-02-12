@@ -6,12 +6,18 @@ using UnityEngine;
 public struct Size
 {
     [SerializeField]
-    public int width;
+    public int Width;
     [SerializeField]
-    public int height;
+    public int Height;
+
+    public Size(int width, int height)
+    {
+        Width = width;
+        Height = height;
+    }
 }
 
-class Rect
+public class Rect
 {
     public int Left;
     public int Top;
@@ -54,20 +60,47 @@ class Section
     }
 }
 
-enum TileType
+public enum TileType
 {
+    Wall,
     Floor,
-    Wall
 }
 
-public class DangeonGenerator : MonoBehaviour
+public struct Pos
+{
+    public int X;
+    public int Y;
+
+    public Pos(int x, int y)
+    {
+        X = x;
+        Y = y;
+    }
+}
+
+public class Room
+{
+    public Rect Rect;
+
+    public Room(Rect rect)
+    {
+        Rect = rect;
+    }
+
+    public Pos RandomPosInRect()
+    {
+        int x = Random.Range(Rect.Left, Rect.Right);
+        int y = Random.Range(Rect.Top, Rect.Bottom);
+        return new Pos(x, y);
+    }
+}
+
+public class DangeonGenerator
 {
 
-    public GameObject player;
-    public GameObject tile;
-    public Size mapSize;
-    private bool[,] mapSection;
+    private TileType[,] map;
     private List<Section> sectionList = new List<Section>();
+    private List<Room> rooms = new List<Room>();
 
 
     const int MIN_ROOM = 13;
@@ -76,11 +109,11 @@ public class DangeonGenerator : MonoBehaviour
     const int POS_MERGIN = 2;
 
 
-    void Awake()
+    public (TileType[,], List<Room>) Generate(Size mapSize)
     {
-        mapSection = new bool[mapSize.width, mapSize.height];
+        map = new TileType[mapSize.Width, mapSize.Height];
 
-        CreateSection(new Rect(0, 0, mapSize.width - 1, mapSize.height - 1));
+        CreateSection(new Rect(0, 0, mapSize.Width - 1, mapSize.Height - 1));
 
         bool bVertical = Random.Range(0, 2) == 0;
         SplitDivison(bVertical);
@@ -89,40 +122,7 @@ public class DangeonGenerator : MonoBehaviour
         ConnectRooms();
 
 
-        for (int j = 0; j < mapSize.height; j++)
-        {
-            for (int i = 0; i < mapSize.width; i++)
-            {
-                if (mapSection[i, j] == false)
-                {
-                    GameObject obj = Instantiate(tile, new Vector3(1.0f * i, 1.0f * j, 0.0f), Quaternion.identity);
-                    obj.name = "tile" + i + j;
-                }
-            }
-        }
-
-        bool putp = false;
-
-        for (int j = 0; j < mapSize.height; j++)
-        {
-            for (int i = 0; i < mapSize.width; i++)
-            {
-                if (mapSection[i, j] == true)
-                {
-                    GameObject p = Instantiate(player, new Vector3(1.0f * i, 1.0f * j, 0.0f), Quaternion.identity);
-                    p.name = "Player";
-                    putp = true;
-                    break;
-                }
-            }
-            if (putp == true)
-            {
-                break;
-            }
-        }
-
-
-
+        return (map, rooms);
     }
 
     void CreateSection(Rect rect)
@@ -223,6 +223,7 @@ public class DangeonGenerator : MonoBehaviour
             int bottom = top + sh;
 
             section.Room = new Rect(left, top, right, bottom);
+            rooms.Add(new Room(section.Room));
             FillDgRect(section.Room);
         }
     }
@@ -349,7 +350,7 @@ public class DangeonGenerator : MonoBehaviour
         {
             for (int i = r.Left; i < r.Right; i++)
             {
-                mapSection[i, j] = true;
+                map[i, j] = TileType.Floor;
             }
         }
     }

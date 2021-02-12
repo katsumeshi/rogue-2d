@@ -9,7 +9,7 @@ public class FollowCamera : MonoBehaviour
     //Transform playerTransform;
     void Start()
     {
-        player = GameObject.Find("Player");
+        player = GameObject.Find("player");
         print(player);
         //player = playerObj.GetComponent<PlayerController>();
         //playerTransform = playerObj.transform;
