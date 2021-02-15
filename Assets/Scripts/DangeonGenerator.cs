@@ -64,6 +64,9 @@ public enum TileType
 {
     Wall,
     Floor,
+    Player,
+    Enemy,
+    Exit
 }
 
 public struct Pos
@@ -103,9 +106,9 @@ public class DangeonGenerator
     private List<Room> rooms = new List<Room>();
 
 
-    const int MIN_ROOM = 13;
-    const int MAX_ROOM = 15;
-    const int OUTER_MERGIN = 3;
+    const int MIN_ROOM = 5;
+    const int MAX_ROOM = 8;
+    const int OUTER_MERGIN = 1;
     const int POS_MERGIN = 2;
 
 

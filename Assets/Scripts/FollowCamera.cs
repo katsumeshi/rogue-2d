@@ -5,14 +5,9 @@ using UnityEngine;
 public class FollowCamera : MonoBehaviour
 {
     GameObject player;
-    //PlayerController player;
-    //Transform playerTransform;
     void Start()
     {
         player = GameObject.Find("player");
-        print(player);
-        //player = playerObj.GetComponent<PlayerController>();
-        //playerTransform = playerObj.transform;
     }
     void LateUpdate()
     {

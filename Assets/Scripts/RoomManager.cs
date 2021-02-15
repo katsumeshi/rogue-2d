@@ -11,8 +11,34 @@ public class RoomManager
         Rooms = rooms;
     }
 
-    public Pos PlayerStartPos()
+    public Pos PlayerSpawntPos()
     {
-        return Rooms[0].RandomPosInRect();
+        return SpawnPos(0);
+    }
+
+    public List<Pos> EnemySpawnPos()
+    {
+        List<Pos> pos = new List<Pos>();
+        int enemyCount = Random.Range(1, Rooms.Count);
+        for (int i = 0; i < enemyCount; i++)
+        {
+            pos.Add(SpawnPos(Random.Range(0, Rooms.Count - 1)));
+        }
+        return pos;
+    }
+
+    public Pos ExitSpawnPos()
+    {
+        return SpawnPos(Rooms.Count - 1);
+    }
+
+    private Pos SpawnPos(int roomIndex)
+    {
+        if (0 <= roomIndex && roomIndex < Rooms.Count)
+        {
+            return Rooms[roomIndex].RandomPosInRect();
+        }
+        Debug.Assert(false, "SpawnPos: out of range");
+        return new Pos(0, 0);
     }
 }
