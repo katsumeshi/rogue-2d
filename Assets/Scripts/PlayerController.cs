@@ -3,15 +3,49 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+public enum Direction
+{
+    Down,
+    Left,
+    Up,
+    Right
+}
+
 public struct Move
 {
+
     public int X;
     public int Y;
+    public Direction Direction;
 
     public Move(int x, int y)
     {
         X = x;
         Y = y;
+        Direction = Direction.Up;
+        Direction = GetDirection();
+    }
+
+    public Direction GetDirection()
+    {
+
+        if (X == 0 && Y == 1)
+        {
+            return Direction.Up;
+        }
+        else if (X == 0 && Y == -1)
+        {
+            return Direction.Down;
+        }
+        else if (X == 1 && Y == 0)
+        {
+            return Direction.Right;
+        }
+        else if (X == -1 && Y == 0)
+        {
+            return Direction.Left;
+        }
+        return Direction.Up;
     }
 
     public static Move Up()
@@ -42,23 +76,19 @@ public struct Move
         moves.Add(Left());
         moves.Add(Right());
 
-        int index = UnityEngine.Random.Range(0, moves.Count-1);
+        int index = UnityEngine.Random.Range(0, moves.Count);
         return moves[index];
+    }
+
+    public bool WillMove()
+    {
+        return X != 0 || Y != 0;
     }
 }
 
 public class PlayerController : MonoBehaviour
 {
 
-    public enum Direction
-    {
-        Down,
-        Left,
-        Up,
-        Right
-    }
-
-    private Direction direction = Direction.Up;
     private Animator animator;
     private Pos pos;
     private MapManager mapManager;
@@ -73,46 +103,52 @@ public class PlayerController : MonoBehaviour
         Move move = new Move(0, 0);
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            direction = Direction.Up;
-            WalkSwitch();
             move = Move.Up();
         }
 
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            direction = Direction.Left;
-            WalkSwitch();
             move = Move.Left();
         }
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            direction = Direction.Right;
-            WalkSwitch();
             move = Move.Right();
         }
 
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            direction = Direction.Down;
-            WalkSwitch();
             move = Move.Down();
         }
 
-        pos = mapManager.Walk(TileType.Player ,pos, new Pos(pos.X + move.X, pos.Y + move.Y));
-        transform.position = new Vector3(pos.X, pos.Y, 0);
+        if (move.WillMove())
+        {
 
+            print("12444443333");
+            print(pos.ToString());
+            animator.SetInteger("direction", (int) move.Direction);
+            Pos next = new Pos(pos.X + move.X, pos.Y + move.Y);
+            if (mapManager.CanWalk(pos, next))
+            {
+                pos = next;
+                transform.position = new Vector3(pos.X, pos.Y, 0);
+            }
+            mapManager.EnemyTurn();
+        }
     }
 
-    public void Setup(MapManager mapManager,RoomManager roomManager)
+    public Pos Spawn(MapManager mapManager, RoomManager roomManager)
     {
-        name = "player";
-        pos = roomManager.PlayerSpawntPos();
         this.mapManager = mapManager;
+        pos = roomManager.PlayerSpawntPos();
+        transform.position = new Vector3(pos.X, pos.Y, 0);
+        print("spawwwnnnn");
+        print(pos.ToString());
+        return pos;
     }
 
-    private void WalkSwitch()
+    public List<TileType> AllowTile()
     {
-        animator.SetInteger("direction", (int) direction);
+        return new List<TileType>() { TileType.Floor, TileType.Exit };
     }
 }

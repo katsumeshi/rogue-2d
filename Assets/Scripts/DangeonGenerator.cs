@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -69,7 +68,7 @@ public enum TileType
     Exit
 }
 
-public struct Pos
+public class Pos
 {
     public int X;
     public int Y;
@@ -78,6 +77,11 @@ public struct Pos
     {
         X = x;
         Y = y;
+    }
+
+    public override string ToString()
+    {
+        return "x: " + X + " y: " + Y;
     }
 }
 

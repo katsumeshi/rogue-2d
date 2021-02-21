@@ -15,4 +15,12 @@ public class EnemyController : MonoBehaviour
     {
         
     }
+
+    public Pos Spawn(MapManager mapManager, RoomManager roomManager)
+    {
+        Pos pos = roomManager.EnemySpawnPos();
+        name = "enemy" + pos.X + "_" + pos.Y;
+        transform.position = new Vector3(1.0f * pos.X, 1.0f * pos.Y, 0.0f);
+        return pos;
+    }
 }

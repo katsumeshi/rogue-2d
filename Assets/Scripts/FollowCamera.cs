@@ -4,7 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public class FollowCamera : MonoBehaviour
 {
-    GameObject player;
+    public GameObject player;
     void Start()
     {
         player = GameObject.Find("player");

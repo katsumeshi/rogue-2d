@@ -16,7 +16,8 @@ public class MapManager : MonoBehaviour
 
     private TileType[,] tiles;
     private RoomManager roomManager;
-    private bool playerTurn = true; 
+    private bool playerTurn;
+    private PlayerController playerController;
 
     void Awake()
     {
@@ -25,16 +26,15 @@ public class MapManager : MonoBehaviour
 
     void MapInit()
     {
+        playerTurn = false;
         DestroyObjects();
         DangeonGenerator dg = new DangeonGenerator();
         (TileType[,] tiles, List<Room> rooms) map = dg.Generate(mapSize);
         roomManager = new RoomManager(map.rooms);
         tiles = map.tiles;
 
-        GameObject player2 = Instantiate(player, new Vector3(0, 0, 0), Quaternion.identity);
-        PlayerController playerController = player2.GetComponent<PlayerController>();
-        playerController.Setup(this, roomManager);
         RenderTiles();
+        PlayerSpawn();
         EnemiesSpawn();
         ExitSpawn();
     }
@@ -48,6 +48,7 @@ public class MapManager : MonoBehaviour
 
             foreach (GameObject obj in objects)
             {
+
                 Move move = Move.Random();
                 Vector3 pos = obj.transform.position;
                 Pos cur = new Pos((int)pos.x, (int)pos.y);
@@ -67,7 +68,7 @@ public class MapManager : MonoBehaviour
             string row = "";
             for (int i = 0; i < mapSize.Width; i++)
             {
-                row += (int) tiles[i, mapSize.Height-j-1] + ",";
+                row += (int)tiles[i, mapSize.Height - j - 1] + ",";
             }
             debug += row + "\n";
         }
@@ -91,27 +92,32 @@ public class MapManager : MonoBehaviour
 
     void DestroyObjects()
     {
-        for (int j = 0; j < mapSize.Height; j++)
+        GameObject[] objects = GameObject.FindGameObjectsWithTag("Tile");
+        foreach (GameObject obj in objects)
         {
-            for (int i = 0; i < mapSize.Width; i++)
-            {
-                GameObject obj = GameObject.Find("tile" + i + "_" + j);
-                if (obj) Destroy(obj);
-            }
+            Destroy(obj);
         }
-        GameObject player = GameObject.Find("player");
-        if (player) Destroy(player);
+    }
+
+    void PlayerSpawn()
+    {
+        playerController = player.GetComponent<PlayerController>();
+        Pos pos = playerController.Spawn(this, roomManager);
+        player.transform.position = new Vector3(pos.X, pos.Y, 0);
+        tiles[pos.X, pos.Y] = TileType.Player;
     }
 
     void EnemiesSpawn()
     {
-        List<Pos> posList = roomManager.EnemySpawnPos();
-        posList.ForEach(pos =>
+
+        int len = Random.Range(0, 3);
+        for (int i = 0; i < len; i++)
         {
+            GameObject ene = Instantiate(enemy, new Vector3(0, 0, 0), Quaternion.identity);
+            EnemyController enemyController = ene.GetComponent<EnemyController>();
+            Pos pos = enemyController.Spawn(this, roomManager);
             tiles[pos.X, pos.Y] = TileType.Enemy;
-            GameObject ene = Instantiate(enemy, new Vector3(1.0f * pos.X, 1.0f * pos.Y, 0.0f), Quaternion.identity);
-            ene.name = "enemy" + pos.X + "_" + pos.Y;
-        });
+        }
     }
 
     void ExitSpawn()
@@ -125,13 +131,40 @@ public class MapManager : MonoBehaviour
 
     public Pos Walk(TileType tileType, Pos cur, Pos next)
     {
-        if (tiles[next.X, next.Y] == TileType.Floor || tiles[next.X, next.Y] == TileType.Exit)
+        if (tiles[next.X, next.Y] == TileType.Floor)
         {
             tiles[next.X, next.Y] = tileType;
             tiles[cur.X, cur.Y] = TileType.Floor;
-            playerTurn = false;
             return next;
         }
         return cur;
+    }
+
+
+    public bool CanWalk(Pos cur, Pos next)
+    {
+        if (tiles[next.X, next.Y] == TileType.Exit)
+        {
+            tiles[next.X, next.Y] = TileType.Player;
+            MapInit();
+        }
+        else if (tiles[next.X, next.Y] == TileType.Floor)
+        {
+            TileType tmp = tiles[next.X, next.Y];
+            tiles[next.X, next.Y] = TileType.Player;
+            tiles[cur.X, cur.Y] = tmp;
+            return true;
+        }
+        return false;
+    }
+
+    public void PlayerTurn()
+    {
+        playerTurn = true;
+    }
+
+    public void EnemyTurn()
+    {
+        playerTurn = false;
     }
 }
